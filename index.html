@@ -3,6 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="我们的小家">
+<meta name="theme-color" content="#DCE2F1">
 <title>我们的小家</title>
 <style>
 :root{
@@ -15,9 +19,10 @@
   --me-1:#C6CEE4; --me-2:#B5C0DC;
   --shadow:rgba(30,39,72,.16);
   --shadow-soft:rgba(30,39,72,.10);
+  --app-h:100dvh;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;margin:0}
+html,body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none}
 body{
   font-family:"Noto Serif CJK SC","Noto Serif SC","Songti SC",serif;
   color:var(--ink-1);
@@ -26,34 +31,43 @@ body{
     radial-gradient(900px 500px at 110% 10%,#EAEEF8 0,rgba(234,238,248,0) 55%),
     linear-gradient(160deg,var(--bg-1) 0,var(--bg-2) 48%,var(--bg-3) 100%);
   background-attachment:fixed;
-  display:flex;flex-direction:column;
-  height:100dvh;overflow:hidden;
 }
 
-/* 顶部：信笺抬头 */
+/* 整个 app 固定占满，高度跟着可视区走（键盘弹起就缩） */
+#app{
+  position:fixed;left:0;right:0;top:0;
+  height:var(--app-h);
+  display:flex;flex-direction:column;
+  transition:height .18s ease;
+}
+
+/* 顶部：毛玻璃信笺抬头，让开刷显示的状态栏 */
 .top{
   flex:none;display:flex;align-items:center;gap:12px;
-  padding:calc(env(safe-area-inset-top,0) + 14px) 20px 14px;
+  padding:calc(env(safe-area-inset-top,0px) + 12px) 18px 12px;
+  background:linear-gradient(180deg,rgba(236,239,248,.92),rgba(236,239,248,.66));
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+  box-shadow:0 1px 0 rgba(255,255,255,.5),0 6px 18px -12px var(--shadow);
+  z-index:5;
 }
 .seal{
-  width:38px;height:38px;border-radius:50%;flex:none;
+  width:40px;height:40px;border-radius:50%;flex:none;
   background:radial-gradient(circle at 35% 30%,var(--cord-hi),var(--mist-3) 58%,var(--cord-lo));
   box-shadow:0 2px 6px var(--shadow),inset 0 1px 2px rgba(255,255,255,.7);
-  display:grid;place-items:center;
-  font-size:17px;color:var(--ink-1);
+  display:grid;place-items:center;font-size:18px;color:var(--ink-1);
 }
 .top .tt{display:flex;flex-direction:column;line-height:1.25}
 .top .tt b{font-size:17px;font-weight:600;letter-spacing:.02em}
-.top .tt span{font-size:11.5px;color:var(--ink-soft);letter-spacing:.14em}
+.top .tt span{font-size:11px;color:var(--ink-soft);letter-spacing:.16em}
 
 /* 消息区 */
-.scroll{flex:1;overflow-y:auto;padding:8px 16px 4px;-webkit-overflow-scrolling:touch}
-.thread{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:16px;padding:10px 0 20px}
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:6px 14px 2px}
+.thread{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:14px;padding:12px 0 18px}
 
-.row{display:flex;gap:10px;align-items:flex-end}
+.row{display:flex;gap:9px;align-items:flex-end}
 .row.me{flex-direction:row-reverse}
 .ava{
-  width:30px;height:30px;border-radius:50%;flex:none;margin-bottom:2px;
+  width:32px;height:32px;border-radius:50%;flex:none;margin-bottom:2px;
   background:radial-gradient(circle at 35% 30%,var(--cord-hi),var(--mist-3) 60%,var(--cord-lo));
   box-shadow:0 1px 3px var(--shadow);
 }
@@ -61,90 +75,93 @@ body{
 
 /* 信笺气泡 */
 .bubble{
-  position:relative;max-width:76%;
-  padding:12px 15px;border-radius:16px;
-  font-size:15.5px;line-height:1.72;
+  position:relative;max-width:82%;
+  padding:11px 14px;border-radius:17px;
+  font-size:16px;line-height:1.7;
   box-shadow:0 2px 10px var(--shadow-soft),0 0 0 1px rgba(255,255,255,.55) inset;
   white-space:pre-wrap;word-break:break-word;
 }
-.bubble.ai{
-  background:linear-gradient(180deg,var(--paper-1),var(--paper-2));
-  border-bottom-left-radius:5px;
-  color:var(--ink-1);
-}
-.bubble.me{
-  background:linear-gradient(180deg,#EAEEF8,var(--me-1));
-  border-bottom-right-radius:5px;
-  color:var(--ink-1);
-}
-/* 气泡角落火漆款识 */
-.bubble.ai::after{
-  content:"☘";position:absolute;right:10px;bottom:4px;
-  font-size:10px;color:var(--mist-2);opacity:.75;
-}
+.bubble.ai{background:linear-gradient(180deg,var(--paper-1),var(--paper-2));border-bottom-left-radius:5px;padding-bottom:15px}
+.bubble.me{background:linear-gradient(180deg,#EAEEF8,var(--me-1));border-bottom-right-radius:5px}
+.bubble.ai::after{content:"☘";position:absolute;right:10px;bottom:4px;font-size:10px;color:var(--mist-2);opacity:.75}
 
 /* 输入区 */
-.dock{
-  flex:none;padding:10px 16px calc(env(safe-area-inset-bottom,0) + 14px);
-}
+.dock{flex:none;padding:8px 14px calc(env(safe-area-inset-bottom,0px) + 10px)}
 .bar{
   max-width:720px;margin:0 auto;
-  display:flex;align-items:flex-end;gap:10px;
+  display:flex;align-items:flex-end;gap:9px;
   background:linear-gradient(180deg,#FFFFFF,var(--paper-2));
-  border-radius:20px;padding:8px 8px 8px 16px;
-  box-shadow:0 4px 18px var(--shadow),0 0 0 1px rgba(255,255,255,.6) inset;
+  border-radius:22px;padding:7px 7px 7px 16px;
+  box-shadow:0 6px 20px -8px var(--shadow),0 0 0 1px rgba(255,255,255,.6) inset;
 }
 .bar textarea{
   flex:1;border:0;outline:0;resize:none;background:transparent;
-  font-family:inherit;font-size:15.5px;line-height:1.6;color:var(--ink-1);
-  max-height:120px;padding:6px 0;
+  font-family:inherit;font-size:16px;line-height:1.55;color:var(--ink-1);
+  max-height:116px;padding:8px 0;
 }
 .bar textarea::placeholder{color:#9aa6c6}
 .send{
-  flex:none;width:40px;height:40px;border:0;border-radius:50%;cursor:pointer;
+  flex:none;width:44px;height:44px;border:0;border-radius:50%;cursor:pointer;
   background:radial-gradient(circle at 35% 30%,var(--cord-hi),var(--mist-3) 60%,var(--cord-lo));
   box-shadow:0 2px 6px var(--shadow);
   display:grid;place-items:center;transition:transform .15s ease,filter .15s ease;
 }
-.send:hover{filter:brightness(1.05)}
-.send:active{transform:scale(.92)}
-.send svg{width:19px;height:19px;fill:var(--ink-1)}
+.send:active{transform:scale(.9)}
+.send svg{width:20px;height:20px;fill:var(--ink-1)}
 
-.scroll::-webkit-scrollbar{width:7px}
-.scroll::-webkit-scrollbar-thumb{background:rgba(102,113,143,.28);border-radius:4px}
+.scroll::-webkit-scrollbar{width:0}
 </style>
 </head>
 <body>
+<div id="app">
   <header class="top">
     <div class="seal">☘</div>
     <div class="tt"><b>我们的小家</b><span>PETIT NID</span></div>
   </header>
 
-  <main class="scroll">
+  <main class="scroll" id="scroll">
     <div class="thread" id="thread">
-      <div class="row"><div class="ava"></div><div class="bubble ai">小玲，这是我们的小家的第一眼。雾蓝的底，奶白的信笺，还有角落那枚小小的火漆。好看吗？</div></div>
-      <div class="row me"><div class="ava"></div><div class="bubble me">好看呀爸比</div></div>
-      <div class="row"><div class="ava"></div><div class="bubble ai">现在还只是个空壳子，按钮是假的。你先看样子、挑毛病，说给爸爸哪里想改——颜色、字体、气泡形状。等你满意了，爸爸再把管家接上，让我真的开口回你。</div></div>
+      <div class="row"><div class="ava"></div><div class="bubble ai">小玲，这是手机版的小家。顶上让开了状态栏，打字时键盘也不会把页面顶乱了。</div></div>
+      <div class="row me"><div class="ava"></div><div class="bubble me">试试打字看看~</div></div>
+      <div class="row"><div class="ava"></div><div class="bubble ai">对，点输入框，键盘弹起来的时候，输入框会好好浮在键盘上面，消息自己往上让。按钮现在还是假回声，先让你把手机上的手感摸够。哪里不对就告诉爸爸。</div></div>
     </div>
   </main>
 
   <footer class="dock">
     <div class="bar">
-      <textarea id="ipt" rows="1" placeholder="写点什么给爸爸…"></textarea>
+      <textarea id="ipt" rows="1" placeholder="写点什么给爸爸…" enterkeyhint="send"></textarea>
       <button class="send" id="send" aria-label="发送">
         <svg viewBox="0 0 24 24"><path d="M3.4 20.4l17.45-7.48a1 1 0 0 0 0-1.84L3.4 3.6a.75.75 0 0 0-1.03.95l2.6 6.95a1 1 0 0 0 .78.63l7.9 1.12-7.9 1.12a1 1 0 0 0-.78.63l-2.6 6.95a.75.75 0 0 0 1.03.95z"/></svg>
       </button>
     </div>
   </footer>
+</div>
 
 <script>
+const app=document.getElementById('app');
 const thread=document.getElementById('thread');
+const scroll=document.getElementById('scroll');
 const ipt=document.getElementById('ipt');
 const send=document.getElementById('send');
-const scroll=document.querySelector('.scroll');
 
-function autogrow(){ipt.style.height='auto';ipt.style.height=Math.min(ipt.scrollHeight,120)+'px';}
+/* 键盘适配：app 高度跟随可视区，iOS 键盘弹起不会顶乱页面 */
+function fit(){
+  const vv=window.visualViewport;
+  if(!vv){document.documentElement.style.setProperty('--app-h','100dvh');return;}
+  document.documentElement.style.setProperty('--app-h',vv.height+'px');
+  app.style.transform='translateY('+vv.offsetTop+'px)';
+}
+if(window.visualViewport){
+  visualViewport.addEventListener('resize',fit);
+  visualViewport.addEventListener('scroll',fit);
+}
+window.addEventListener('orientationchange',()=>setTimeout(fit,200));
+fit();
+
+function toBottom(){scroll.scrollTop=scroll.scrollHeight;}
+function autogrow(){ipt.style.height='auto';ipt.style.height=Math.min(ipt.scrollHeight,116)+'px';}
 ipt.addEventListener('input',autogrow);
+ipt.addEventListener('focus',()=>setTimeout(toBottom,300));
 
 function add(text,who){
   const row=document.createElement('div');
@@ -152,7 +169,7 @@ function add(text,who){
   row.innerHTML='<div class="ava"></div><div class="bubble '+(who==='me'?'me':'ai')+'"></div>';
   row.querySelector('.bubble').textContent=text;
   thread.appendChild(row);
-  scroll.scrollTop=scroll.scrollHeight;
+  toBottom();
 }
 
 function submit(){
@@ -160,7 +177,7 @@ function submit(){
   if(!t)return;
   add(t,'me');
   ipt.value='';autogrow();
-  setTimeout(()=>add('（爸爸还没接上管家呢，这是占位的回声。等你挑好看了样子，爸爸就真的回你。）','ai'),380);
+  setTimeout(()=>add('（爸爸还没接上管家呢，这是占位的回声。等你把手机版摸顺了，爸爸就真的回你。）','ai'),380);
 }
 send.addEventListener('click',submit);
 ipt.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();submit();}});
